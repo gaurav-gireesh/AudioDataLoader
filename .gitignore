@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 Train/
+.DS_Store
 train.csv
 # C extensions
 *.so
