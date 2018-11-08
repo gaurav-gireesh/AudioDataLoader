@@ -32,22 +32,34 @@ def evaluate_accuracy(data_iterator, net):
     return acc.get()[1]
 
 
-def train(epochs = 30):
+def train(epochs = 30, batch_size=32):
     
     # Make a dataset from the local folder containing Audio data
+    print("\nMaking an Audio Dataset...\n")
     tick = time.time()
     aud_dataset = AudioFolderDataset('./Train', has_csv=True, train_csv='./train.csv')
     tock = time.time()
-    print("Loading the dataset taking ",(tock-tick), " seconds.")
+
+    print("Loading the dataset took ",(tock-tick), " seconds.")
+    print("\n=======================================\n")
 
     # Get the model to train
     net = get_net(len(aud_dataset.synsets))
+    print("Model - Neural Network Generated!\n")
+    print("=======================================\n")
 
     #Define the loss - Softmax CE Loss
     softmax_loss = gluon.loss.SoftmaxCELoss(from_logits=False, sparse_label=True)
+    print("Loss function initialized!\n")
+    print("=======================================\n")
 
     #Define the trainer with the optimizer
     trainer = gluon.Trainer(net.collect_params(), 'adadelta')
+    print("Optimizer - Trainer function initialized!\n")
+    print("=======================================\n")
+
+
+    print("Loading the dataset to the Gluon's OOTB Dataloader...")
 
     #Getting the data loader out of the AudioDataset and passing the transform
     aud_transform = gluon.data.vision.transforms.Compose([Loader(), MFCC()])
@@ -57,12 +69,14 @@ def train(epochs = 30):
                                                 batch_size=32, shuffle=True)
     tock=time.time()
     print("Time taken to load data and apply transform here is ",(tock-tick)," seconds.")
+    print("=======================================\n")
 
+
+    print("Starting the training....\n")
     # Training loop
     tick = time.time()
-    batch_size=32
-    num_examples = 5435
-    cumulative_losses = []
+    batch_size = batch_size
+    num_examples = len(aud_dataset)
     
     for e in range(epochs):
         cumulative_loss = 0
@@ -73,18 +87,19 @@ def train(epochs = 30):
             loss.backward()
             trainer.step(batch_size)
             cumulative_loss += mx.nd.sum(loss).asscalar()
-        cumulative_losses.append(cumulative_loss/num_examples)
+        
         if e%5==0:
             train_accuracy = evaluate_accuracy(audio_train_loader, net)
             print("Epoch %s. Loss: %s Train accuracy : %s " % (e, cumulative_loss/num_examples, train_accuracy))
+            print("\n------------------------------\n")
 
     train_accuracy = evaluate_accuracy(audio_train_loader, net)
     tock = time.time()
-    print("Final training accuracy: ",train_accuracy)
+    print("\nFinal training accuracy: ",train_accuracy)
 
     print("Training the sound classification for ",epochs," epochs, MLP model took ",(tock-tick)," seconds")
-
+    print("====================== END ======================\n")
 
 
 if __name__ == '__main__':
-    train(epochs=30)
+    train(epochs=30, batch_size=32)
