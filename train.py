@@ -17,7 +17,7 @@ def get_net(num_labels = 10):
         net.add(gluon.nn.Dense(256, activation="relu")) # 1st layer (256 nodes)
         net.add(gluon.nn.Dense(256, activation="relu")) # 2nd hidden layer
     net.add(gluon.nn.Dense(num_labels))
-    net.collect_params().initialize(mx.init.Xavier())
+    net.collect_params().initialize(mx.init.Normal(1.))
     return net
 
 
@@ -65,7 +65,7 @@ def train(epochs = 30, batch_size=32):
     aud_transform = gluon.data.vision.transforms.Compose([Loader(), MFCC()])
     tick = time.time()
 
-    audio_train_loader = gluon.data.DataLoader(aud_dataset.transform_first(aud_transform,lazy=False), 
+    audio_train_loader = gluon.data.DataLoader(aud_dataset.transform_first(aud_transform), 
                                                 batch_size=32, shuffle=True)
     tock=time.time()
     print("Time taken to load data and apply transform here is ",(tock-tick)," seconds.")
@@ -103,3 +103,4 @@ def train(epochs = 30, batch_size=32):
 
 if __name__ == '__main__':
     train(epochs=30, batch_size=32)
+    

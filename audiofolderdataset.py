@@ -12,8 +12,7 @@ class AudioFolderDataset(gluon.data.dataset.Dataset):
         root/drilling/26.wav
         root/dog_barking/42.wav
             OR
-        Files(wav) and a csv file that has filename and associated label
-        
+        Files(wav) and a csv file that has filename and associated label 
 
     Parameters
     ----------
@@ -39,14 +38,12 @@ class AudioFolderDataset(gluon.data.dataset.Dataset):
     """
     def __init__(self, root, transform=None, has_csv=False, train_csv=None):
         self._root = os.path.expanduser(root)
-       
         self._transform = transform
         self._exts = ['.wav']
         self._has_csv = has_csv
         self._train_csv = train_csv
         self._list_audio_files(self._root)
         
-
     def _list_audio_files(self, root):
         """
             Populates synsets - a map of index to label for the data items.
@@ -91,7 +88,8 @@ class AudioFolderDataset(gluon.data.dataset.Dataset):
                 self.synsets.append(class_name)
                 
             for i in range(len(data_tmp)):
-                self.items.append((data_tmp[i]+".wav", self._label[i]))
+                if '.wav' not in data_tmp[i]:
+                    self.items.append((data_tmp[i]+".wav", self._label[i]))
             
     
     def __getitem__(self, idx):
@@ -106,3 +104,29 @@ class AudioFolderDataset(gluon.data.dataset.Dataset):
             Retrieves the number of items in the dataset
         """
         return len(self.items)
+
+
+    def transform_first(self, fn, lazy=True):
+        """Returns a new dataset with the first element of each sample
+        transformed by the transformer function `fn`.
+
+        This is useful, for example, when you only want to transform data
+        while keeping label as is.
+
+        Parameters
+        ----------
+        fn : callable
+            A transformer function that takes the first elemtn of a sample
+            as input and returns the transformed element.
+        lazy : bool, default True
+            If False, transforms all samples at once. Otherwise,
+            transforms each sample on demand. Note that if `fn`
+            is stochastic, you must set lazy to True or you will
+            get the same result on all epochs.
+
+        Returns
+        -------
+        Dataset
+            The transformed dataset.
+        """
+        return super(AudioFolderDataset, self).transform_first(fn, lazy=False)
